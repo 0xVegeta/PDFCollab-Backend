@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const fileSchema = mongoose.Schema({
-    url: String,
+    url: { type: String, required: true, unique: true},
     owner: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
@@ -14,6 +14,10 @@ const fileSchema = mongoose.Schema({
     commentAccess: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
+    }],
+    comments : [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Comment'
     }],
     links: [String]
 },

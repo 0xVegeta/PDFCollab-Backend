@@ -1,6 +1,7 @@
 const cloudinary = require('cloudinary').v2
 const File = require('../models/assets')
 const User = require("../models/user")
+const Comment =  require('../models/comment')
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -54,13 +55,14 @@ const viewPDF = async(req, res)=>{
         // Find the file by ID and populate the 'owner' and 'viewAccess' fields
         const file = await File.findById(fileId)
             .populate('owner', '_id')
-            .populate('viewAccess', '_id');
+            .populate('viewAccess', '_id')
+            .populate('comments');
 
         if (!file) {
             return res.status(404).json({ message: 'File not found' });
         }
         // Check if the user is the owner or has view access
-        if (file.owner._id.toString() === userId || file.viewAccess.some(user => user._id.toString() === userId)) {
+        if (file.owner._id.toString() === userId.toString() || file.viewAccess.some(user => user._id.toString() === userId.toString())) {
             return res.status(200).json({ file });
         } else {
             return res.status(403).json({ message: 'Access denied' });
@@ -110,7 +112,7 @@ const comment = async(req, res)=>{
     try {
         const {fileId} = req.params
         const userId = req.user._id
-        const {comment} = req.body
+        const {commentBody} = req.body
         // Find the file by ID and populate the 'owner' and 'viewAccess' fields
         const file = await File.findById(fileId)
             .populate('owner', '_id')
@@ -120,8 +122,12 @@ const comment = async(req, res)=>{
             return res.status(404).json({ message: 'File not found' });
         }
         // Check if the user is the owner or has view access
-        if (file.owner._id.toString() === userId || file.commentAccess.some(user => user._id.toString() === userId)) {
-
+        if (file.owner._id.toString() === userId.toString() || file.commentAccess.some(user => user._id.toString() === userId.toString())) {
+            const comment = new Comment(commentBody)
+            comment.author = userId
+            file.comments.push(comment)
+            await comment.save()
+            await file.save()
         } else {
             return res.status(403).json({ message: 'Access denied' });
         }
@@ -131,7 +137,6 @@ const comment = async(req, res)=>{
     }
 }
 
-
 module.exports= {
-    uploadPDF, fetchAllPDFs, viewPDF, provideAccess
+    uploadPDF, fetchAllPDFs, viewPDF, provideAccess, comment, getAllComments
 }
