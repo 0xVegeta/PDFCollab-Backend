@@ -28,7 +28,7 @@ const upload = Multer({
         fileSize: 50 * 1024 // 50KB file size limit
     }
 });
-assetsRouter.post('/pdf/upload/' ,protect , upload.single() ,assetsControllers.uploadPDF)
+assetsRouter.post('/pdf/upload/' ,protect , upload.single('pdf') ,assetsControllers.uploadPDF)
 assetsRouter.get('/pdf/fetchAll',protect, assetsControllers.fetchAllPDFs)
 assetsRouter.post('pdf/:fileId/view', protect, assetsControllers.viewPDF)
 assetsRouter.post('/pdf/:fileId/access', protect,assetsControllers.provideAccess)
