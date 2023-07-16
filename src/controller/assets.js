@@ -138,5 +138,5 @@ const comment = async(req, res)=>{
 }
 
 module.exports= {
-    uploadPDF, fetchAllPDFs, viewPDF, provideAccess, comment, getAllComments
+    uploadPDF, fetchAllPDFs, viewPDF, provideAccess, comment
 }
