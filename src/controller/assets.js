@@ -17,7 +17,7 @@ const uploadPDF = async(req, res)=>{
         }
         const pdfFile = await File.create({
             url: req.file.path, // Cloudinary URL
-            name: req.file.originalname,
+            fileName: req.file.originalname,
             owner: req.user._id,
             viewAccess: [],
             commentAccess: [],
@@ -28,7 +28,8 @@ const uploadPDF = async(req, res)=>{
 
         res.status(200).json({success: 'File uploaded successfully', fileData: req.file});
     }catch (err) {
-        res.status(500).json({error:"Something went wrong"})
+        console.log("error", err.stack)
+        res.status(500).json({errorMsg:"Something went wrong", error: err})
     }
 }
 
@@ -139,7 +140,7 @@ const comment = async(req, res)=>{
         }
     } catch (error) {
         console.error(error, error.stack);
-        return res.status(500).json({ message: 'Server error' });
+        return res.status(500).json({ message: 'Something went wrong' });
     }
 }
 
