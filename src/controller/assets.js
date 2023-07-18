@@ -50,7 +50,6 @@ const fetchAllPDFs = async(req, res)=>{
 }
 
 const viewPDF = async(req, res)=>{
-    console.log('check>>>>>>>>>>>>.')
     try {
         const {fileId} = req.params
         const userId = req.user._id
@@ -59,7 +58,6 @@ const viewPDF = async(req, res)=>{
             .populate('owner')
             .populate('viewAccess')
             .populate('commentAccess')
-            .populate('comments');
 
         if (!file) {
             return res.status(404).json({ message: 'File not found' });
@@ -111,7 +109,7 @@ const provideAccess = async(req,res)=>{
     }
 }
 
-const comment = async(req, res)=>{
+const addComment = async(req, res)=>{
     try {
 
         const {fileId} = req.params
@@ -144,6 +142,36 @@ const comment = async(req, res)=>{
     }
 }
 
+const viewAllComment = async(req,res)=>{
+    try {
+        const {fileId} = req.params
+        const userId = req.user._id
+
+        const file = await File.findById(fileId).populate('comments');
+
+        if (!file) {
+            return res.status(404).json({ error: 'File not found' });
+        }
+
+        const comments = file.comments;
+
+        const commentResults = [];
+
+        for (const comment of comments) {
+            const populatedComment = await comment.populate('author')
+            const authorEmail = populatedComment.author.email
+            const authorName = populatedComment.author.name
+            const commentBody = populatedComment.body
+            commentResults.push({ authorEmail, authorName, commentBody })
+        }
+
+        res.status(200).json({commentResults});
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+}
+
 module.exports= {
-    uploadPDF, fetchAllPDFs, viewPDF, provideAccess, comment
+    uploadPDF, fetchAllPDFs, viewPDF, provideAccess, addComment, viewAllComment
 }
