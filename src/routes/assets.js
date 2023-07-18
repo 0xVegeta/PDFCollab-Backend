@@ -30,9 +30,9 @@ const upload = Multer({
 });
 assetsRouter.post('/pdf/upload/' ,protect , upload.single('pdf') ,assetsControllers.uploadPDF)
 assetsRouter.get('/pdf/fetchAll',protect, assetsControllers.fetchAllPDFs)
-assetsRouter.post('pdf/:fileId/view', protect, assetsControllers.viewPDF)
+assetsRouter.post('/pdf/:fileId/view', protect, assetsControllers.viewPDF)
 assetsRouter.post('/pdf/:fileId/access', protect,assetsControllers.provideAccess)
-assetsRouter.post('/pdf/comment/', protect, assetsControllers.comment)
+assetsRouter.post('/pdf/:fileId/comment/', protect, assetsControllers.comment)
 
 
 module.exports = assetsRouter;

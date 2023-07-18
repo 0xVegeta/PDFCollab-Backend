@@ -49,13 +49,15 @@ const fetchAllPDFs = async(req, res)=>{
 }
 
 const viewPDF = async(req, res)=>{
+    console.log('check>>>>>>>>>>>>.')
     try {
         const {fileId} = req.params
         const userId = req.user._id
         // Find the file by ID and populate the 'owner' and 'viewAccess' fields
         const file = await File.findById(fileId)
-            .populate('owner', '_id')
-            .populate('viewAccess', '_id')
+            .populate('owner')
+            .populate('viewAccess')
+            .populate('commentAccess')
             .populate('comments');
 
         if (!file) {
@@ -110,9 +112,11 @@ const provideAccess = async(req,res)=>{
 
 const comment = async(req, res)=>{
     try {
+
         const {fileId} = req.params
         const userId = req.user._id
         const {commentBody} = req.body
+        console.log()
         // Find the file by ID and populate the 'owner' and 'viewAccess' fields
         const file = await File.findById(fileId)
             .populate('owner', '_id')
@@ -123,16 +127,18 @@ const comment = async(req, res)=>{
         }
         // Check if the user is the owner or has view access
         if (file.owner._id.toString() === userId.toString() || file.commentAccess.some(user => user._id.toString() === userId.toString())) {
-            const comment = new Comment(commentBody)
+            const comment = new Comment()
+            comment.body = commentBody
             comment.author = userId
             file.comments.push(comment)
             await comment.save()
             await file.save()
+            return res.status(200).json({message: "Comment added"})
         } else {
             return res.status(403).json({ message: 'Access denied' });
         }
     } catch (error) {
-        console.error(error);
+        console.error(error, error.stack);
         return res.status(500).json({ message: 'Server error' });
     }
 }
