@@ -77,8 +77,10 @@ const viewPDF = async(req, res)=>{
 const provideAccess = async(req,res)=>{
     try{
         const {fileId} = req.params
-        const userId = req.user._id
-        const {provideViewAccess, provideCommentAccess} = req.body
+        const {provideViewAccess, provideCommentAccess, emailId} = req.body
+
+        const user= await User.findOne({email : emailId})
+
         // Find the file by ID and populate the 'owner' and 'viewAccess' fields
         const file = await File.findById(fileId)
 
@@ -87,25 +89,29 @@ const provideAccess = async(req,res)=>{
         }
 
         // Check if the user is the owner or has view access
-        if (file.owner.toString() === userId) {
-            if (provideViewAccess) {
-                file.viewAccess.push(userId);
+        const message = {}
+        if (file.owner.toString() === req.user._id.toString()) {
+            if (provideViewAccess && !file.viewAccess.includes(user._id.toString())) {
+                file.viewAccess.push(user._id);
+                message.viewAccessMsg = "View Access provided to emailId"
             }
 
             // Provide comment access if requested
-            if (provideCommentAccess) {
-                file.commentAccess.push(userId);
+            if (provideCommentAccess && !file.commentAccess.includes(user._id.toString())) {
+                file.commentAccess.push(user._id);
+                message.commentAccessMsg = "Comment Access provided to emailId"
             }
 
             // Save the updated file
             await file.save();
 
-            return res.status(200).json({ message: 'Access granted' });
+            return res.status(200).json({ message });
         } else {
             return res.status(403).json({ message: 'Access denied' });
         }
     }catch (err) {
-
+        console.log('check err', err)
+        return res.status(500).json({errorMsg: err, message: "Something went wrong" })
     }
 }
 
@@ -162,7 +168,7 @@ const viewAllComment = async(req,res)=>{
             const authorName = populatedComment.author.name
             const commentBody = populatedComment.body
             const commentId = populatedComment._id
-            commentResults.push({ authorEmail, authorName, commentBody })
+            commentResults.push({ authorEmail, authorName, commentBody, commentId })
         }
 
         res.status(200).json({commentResults});
