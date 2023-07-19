@@ -145,7 +145,6 @@ const addComment = async(req, res)=>{
 const viewAllComment = async(req,res)=>{
     try {
         const {fileId} = req.params
-        const userId = req.user._id
 
         const file = await File.findById(fileId).populate('comments');
 
@@ -162,6 +161,7 @@ const viewAllComment = async(req,res)=>{
             const authorEmail = populatedComment.author.email
             const authorName = populatedComment.author.name
             const commentBody = populatedComment.body
+            const commentId = populatedComment._id
             commentResults.push({ authorEmail, authorName, commentBody })
         }
 
